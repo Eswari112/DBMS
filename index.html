@@ -115,7 +115,7 @@ document.getElementById("quizForm").addEventListener("submit", function(e) {
 
 // GOOGLE SHEET SUBMISSION
 function submitToGoogleSheet(name, regno, score, time, status) {
-    fetch("https://script.google.com/macros/s/AKfycbwyD2sfvlCYRNgztKuVL3Mmzxztatd_TwjwlW6iXb5ji5-NiF29Mr9Cdw5XzkSaUnMDww/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbzGj9L2J2QATv3I9wKhooU3wakdsJJ6ucWoe-fgRek0h5rOdkcyZRArFO1ZAKqF2fQ4-g/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
@@ -143,3 +143,4 @@ function autoSubmit(status) {
 
 </body>
 </html>
+
