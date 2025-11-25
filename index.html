@@ -12,24 +12,20 @@
         .question { margin-bottom: 20px; }
     </style>
 </head>
-
 <body oncontextmenu="return false;">
 
 <h2>Secure Quiz</h2>
+<p id="warning" class="warning">⚠ Cheating detected! Quiz Auto-Submitted...</p>
 
-<!-- LOGIN -->
+<!-- Login -->
 <div id="loginBox">
-    <label>Name:</label><br>
-    <input type="text" id="name"><br><br>
-
-    <label>Register Number:</label><br>
-    <input type="text" id="regno"><br><br>
-
+    <h3>Login</h3>
+    <input type="text" id="name" placeholder="Enter Name" required><br><br>
+    <input type="password" id="regno" placeholder="Enter Register No" required><br><br>
     <button onclick="startQuiz()">Start Quiz</button>
 </div>
 
-<p id="warning" class="warning">⚠ Cheating detected! Quiz is being auto-submitted...</p>
-
+<!-- Quiz -->
 <form id="quizForm" style="display:none;">
     <div id="quizContainer"></div>
     <button type="submit">Submit</button>
@@ -37,8 +33,7 @@
 
 <script>
 let violated = false;
-let userName = "";
-let userRegNo = "";
+let startTime;
 
 // QUESTIONS
 const questions = [
@@ -48,12 +43,11 @@ const questions = [
     { q: "What is a Dataset?", name: "q4" }
 ];
 
-// Shuffle
+// SHUFFLE FUNCTION
 function shuffle(array) {
     return array.sort(() => Math.random() - 0.5);
 }
 
-// Load questions
 function loadQuestions() {
     const container = document.getElementById("quizContainer");
     const shuffled = shuffle([...questions]);
@@ -61,7 +55,6 @@ function loadQuestions() {
     shuffled.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "question";
-
         div.innerHTML = `
             <label>${index + 1}. ${item.q}</label><br>
             <input type="text" name="${item.name}" required><br>
@@ -69,6 +62,66 @@ function loadQuestions() {
         container.appendChild(div);
     });
 }
+
+// LOGIN → QUIZ START
+function startQuiz() {
+    const name = document.getElementById("name").value;
+    const reg = document.getElementById("regno").value;
+
+    if (name === "" || reg === "") {
+        alert("Enter Login Details");
+        return;
+    }
+
+    userName = name;
+    userRegNo = reg;
+
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("quizForm").style.display = "block";
+
+    loadQuestions();
+    startTime = Date.now();
+}
+
+// GOOGLE SHEET SUBMIT FUNCTION
+function submitToGoogleSheet(name, regno, score, time, status) {
+    fetch("https://script.google.com/macros/s/AKfycbwyD2sfvlCYRNgztKuVL3Mmzxztatd_TwjwlW6iXb5ji5-NiF29Mr9Cdw5XzkSaUnMDww/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, regno, score, time, status })
+    });
+}
+
+// FORM SUBMIT EVENT
+document.getElementById("quizForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+    const finalScore = 4; // for now (you can calculate later)
+
+    submitToGoogleSheet(userName, userRegNo, finalScore, timeTaken, "Submitted");
+    alert("Quiz Submitted");
+    window.location.href = "index.html";
+});
+
+// ANTI-CHEAT
+document.addEventListener("visibilitychange", function () {
+    if (document.hidden && !violated) {
+        violated = true;
+        document.getElementById("warning").style.display = "block";
+
+        const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+        submitToGoogleSheet(userName, userRegNo, 0, timeTaken, "Auto-Submitted (Violation)");
+
+        alert("Cheating Detected! Auto Submitted!");
+        document.getElementById("quizForm").submit();
+    }
+});
+
+</script>
+</body>
+</html>
 
 // Start quiz
 function startQuiz() {
@@ -115,7 +168,7 @@ document.getElementById("quizForm").addEventListener("submit", function(e) {
 
 // GOOGLE SHEET SUBMISSION
 function submitToGoogleSheet(name, regno, score, time, status) {
-    fetch("https://script.google.com/macros/s/AKfycbzGj9L2J2QATv3I9wKhooU3wakdsJJ6ucWoe-fgRek0h5rOdkcyZRArFO1ZAKqF2fQ4-g/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbwyD2sfvlCYRNgztKuVL3Mmzxztatd_TwjwlW6iXb5ji5-NiF29Mr9Cdw5XzkSaUnMDww/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
@@ -143,4 +196,3 @@ function autoSubmit(status) {
 
 </body>
 </html>
-
